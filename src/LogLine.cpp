@@ -1,5 +1,7 @@
-#include "LogLine.h"
+#include "../include/LogLine.h"
+#include "../include/timestamp.h"
 #include <sstream>
+#include <iomanip>
 #include <iostream>
 #include <regex>
 
@@ -10,6 +12,8 @@ LogLine::LogLine(const std::string& line) {
   std::string month, day, time;
   stream >> month >> day >> time;
   m_timestamp = month + " " + day + " " + time;
+  m_parsed_time = parse_timestamp(m_timestamp);
+
 
   stream >> m_hostname;
 
@@ -26,22 +30,40 @@ LogLine::LogLine(const std::string& line) {
   stream >> std::ws;
   
   std::getline(stream, m_event_desc);
+
+  // Get IP and Check if this is a failed login
+  // IP will be empty string if log doesn't contain an IP address
+  m_ip = extract_ip();
+  if (!m_ip.empty()) {
+    if (m_event_desc.substr(0, 15) == "Failed password") {
+      m_is_failed_login = true;
+    }
+  }
+
 }
 
 LogLine::~LogLine() {}
 
-std::string LogLine::get_timestamp()  const { return m_timestamp;  }
-std::string LogLine::get_hostname()   const { return m_hostname;   }
-std::string LogLine::get_service()    const { return m_service;    }
-std::string LogLine::get_event_desc() const { return m_event_desc; }
-int         LogLine::get_pid()        const { return m_pid;        }
+std::string LogLine::get_timestamp()   const { return m_timestamp;       }
+std::string LogLine::get_hostname()    const { return m_hostname;        }
+std::string LogLine::get_service()     const { return m_service;         }
+std::string LogLine::get_event_desc()  const { return m_event_desc;      }
+int         LogLine::get_pid()         const { return m_pid;             }
+bool        LogLine::is_failed_login() const { return m_is_failed_login; }
+std::string LogLine::get_ip()          const { return m_ip;              }
+std::string LogLine::get_formatted_time() const { 
+  std::ostringstream oss;
+  oss << std::put_time(&m_parsed_time, "%c");
+  return oss.str();
+} 
+std::tm     LogLine::get_parsed_time()    const { return m_parsed_time; }
 
 void LogLine::display() {
   std::cout << m_timestamp    << " " 
             << m_hostname     << " "
             << m_service      << ""
      << "[" << m_pid          << "]: "
-            << m_event_desc   << std::endl;
+            << m_event_desc   << "\n";
 }
 
 std::string LogLine::extract_ip() const {

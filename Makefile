@@ -5,7 +5,7 @@ SRC_DIR = src
 INCLUDE_DIR = include
 BUILD_DIR = build
 
-SOURCES = $(SRC_DIR)/LogLine.cpp $(SRC_DIR)/main.cpp
+SOURCES = $(SRC_DIR)/LogLine.cpp $(SRC_DIR)/main.cpp $(SRC_DIR)/timestamp.cpp
 
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
@@ -23,3 +23,4 @@ clean:
 	rm -f $(BUILD_DIR)/*.o $(EXEC)
 
 .PHONY: all clean
+
