@@ -2,6 +2,14 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
+
+typedef struct {
+  std::string origin_ip;
+  int num_attempts;
+  std::string port;
+  std::string service;
+} fail_sum;
 
 void debug_print_LogLine(const LogLine& log);
 
@@ -16,37 +24,46 @@ int main(int argc, char** argv) {
     std::cerr << "Error opening log file at " << filepath << "! (sudo?)" << std::endl;
   }
 
+  // TESTING
+  std::vector<LogLine> logs;
   std::string line;
-
-   
-  // testing timestamp comparisons
-  std::tm time1;
-  std::tm time2;
-  int flag = 0;
-  while (std::getline(log_file, line)) {
+  
+  while (getline(log_file, line)) {
     LogLine log = LogLine(line);
-    switch(flag) {
-      case 0:
-        time1 = log.get_parsed_time();
-        break;
-      case 1:
-        time2 = log.get_parsed_time();
-        break;
-      case 2:
-        break;
+    logs.push_back(log);
+  }
 
-    }
-    flag++;
+  std::vector<fail_sum> fails;
 
-    if (flag == 2) {
-      break;
+  // This is not a good algorithm, high time complexity
+  // TODO: fix
+  bool found = false;
+  for (auto& log : logs) {
+    if (log.is_failed_login()) {
+      for (auto& fail : fails) {
+        if (fail.origin_ip == log.get_ip()) {
+          fail.num_attempts++;
+          found = true;
+          break;
+        }
+      }
+      // matching entry not found
+      if (!found) {
+        fail_sum new_fail;
+        new_fail.num_attempts = 1;
+        new_fail.origin_ip = log.get_ip();
+        fails.push_back(new_fail);
+      }
     }
   }
 
-  if (is_earlier_time(time1, time2)) {
-    std::cout << "Time1 is earlier than time2" << std::endl;
+  std::cout << "Origin IP:\tNum Attempts:" << std::endl;
+  for (auto fail : fails) {
+    std::cout << fail.origin_ip << "\t" <<fail.num_attempts << "\n";
   }
+
   // END TESTING
+
 
   log_file.close();
   return 0;
@@ -60,4 +77,3 @@ void debug_print_LogLine(const LogLine& log) {
   std::cout << "PID:                " << log.get_pid()        << "\n";
   std::cout << "Event Description:  " << log.get_event_desc() << "\n";
 }
-
