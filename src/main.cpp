@@ -1,8 +1,10 @@
 #include "../include/LogLine.h"
 #include <iostream>
+#include <cstdint>
 #include <string>
 #include <fstream>
 #include <vector>
+#include <getopt.h>
 
 typedef struct {
   std::string origin_ip;
@@ -11,10 +13,42 @@ typedef struct {
   std::string service;
 } fail_sum;
 
+enum Options : std::uint32_t {
+  FAILSSUM      = 1 << 0,
+};
+
 void debug_print_LogLine(const LogLine& log);
 void print_failed_logins(const std::vector<LogLine> logs);
+void usage();
 
 int main(int argc, char** argv) {
+
+  // Parse Command line options
+  
+  if (argc == 1) {
+    std::cerr << "No options given. Use -h for a list of options.\n";
+    exit(1);
+  }
+
+  std::uint32_t OPTIONS = 0;
+  opterr = 0;
+  int opt;
+
+  while ((opt = getopt(argc, argv, "fh")) != -1) {
+    switch(opt) {
+      case 'f':
+        OPTIONS |= FAILSSUM; 
+        break;
+      case 'h':
+        usage();
+        exit(0);
+        break;
+      default:
+        std::cerr << "Invalid command line options entered.\n" 
+                  << "(use -h for a list of options)" << std::endl;
+        exit(1);
+    }
+  }
 
   // TODO: implement distro agnostic filepath
   std::string filepath = "/var/log/secure";
@@ -25,18 +59,18 @@ int main(int argc, char** argv) {
     std::cerr << "Error opening log file at " << filepath << "! (sudo?)" << std::endl;
   }
 
-  // TESTING
   std::vector<LogLine> logs;
   std::string line;
   
-  while (getline(log_file, line)) {
-    LogLine log = LogLine(line);
-    logs.push_back(log);
+  if (OPTIONS & FAILSSUM) {
+    while (getline(log_file, line)) {
+      LogLine log = LogLine(line);
+      logs.push_back(log);
+    }
+
+    print_failed_logins(logs);
   }
 
-  print_failed_logins(logs);
-
-  // END TESTING
 
 
   log_file.close();
@@ -81,4 +115,10 @@ void print_failed_logins(const std::vector<LogLine> logs) {
   for (auto fail : fails) {
     std::cout << fail.origin_ip << "\t" <<fail.num_attempts << "\n";
   }
+}
+
+void usage() {
+  std::cout << "Usage:          sudo ./log_parser [OPTIONS]\n"
+            << "Options:\n"
+            << "    -f          Print login failure summary\n";
 }
