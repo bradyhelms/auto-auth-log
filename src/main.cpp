@@ -12,6 +12,7 @@ typedef struct {
 } fail_sum;
 
 void debug_print_LogLine(const LogLine& log);
+void print_failed_logins(const std::vector<LogLine> logs);
 
 int main(int argc, char** argv) {
 
@@ -33,6 +34,25 @@ int main(int argc, char** argv) {
     logs.push_back(log);
   }
 
+  print_failed_logins(logs);
+
+  // END TESTING
+
+
+  log_file.close();
+  return 0;
+
+}
+
+void debug_print_LogLine(const LogLine& log) {
+  std::cout << "Timestamp:          " << log.get_timestamp()  << "\n";
+  std::cout << "Hostname:           " << log.get_hostname()   << "\n";
+  std::cout << "Service:            " << log.get_service()    << "\n";
+  std::cout << "PID:                " << log.get_pid()        << "\n";
+  std::cout << "Event Description:  " << log.get_event_desc() << "\n";
+}
+
+void print_failed_logins(const std::vector<LogLine> logs) {
   std::vector<fail_sum> fails;
 
   // This is not a good algorithm, high time complexity
@@ -61,19 +81,4 @@ int main(int argc, char** argv) {
   for (auto fail : fails) {
     std::cout << fail.origin_ip << "\t" <<fail.num_attempts << "\n";
   }
-
-  // END TESTING
-
-
-  log_file.close();
-  return 0;
-
-}
-
-void debug_print_LogLine(const LogLine& log) {
-  std::cout << "Timestamp:          " << log.get_timestamp()  << "\n";
-  std::cout << "Hostname:           " << log.get_hostname()   << "\n";
-  std::cout << "Service:            " << log.get_service()    << "\n";
-  std::cout << "PID:                " << log.get_pid()        << "\n";
-  std::cout << "Event Description:  " << log.get_event_desc() << "\n";
 }
