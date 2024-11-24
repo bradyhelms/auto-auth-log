@@ -9,7 +9,7 @@ SOURCES = $(SRC_DIR)/LogLine.cpp $(SRC_DIR)/main.cpp $(SRC_DIR)/timestamp.cpp
 
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
-EXEC = $(BUILD_DIR)/log_parser
+EXEC = $(BUILD_DIR)/aal
 
 all: $(EXEC)
 

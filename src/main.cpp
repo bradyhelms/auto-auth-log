@@ -15,6 +15,8 @@ typedef struct {
 
 enum Options : std::uint32_t {
   FAILSSUM      = 1 << 0,
+  FAILFULL      = 1 << 1,
+  PRINTLOG      = 1 << 2,
 };
 
 void debug_print_LogLine(const LogLine& log);
@@ -34,10 +36,16 @@ int main(int argc, char** argv) {
   opterr = 0;
   int opt;
 
-  while ((opt = getopt(argc, argv, "fh")) != -1) {
+  while ((opt = getopt(argc, argv, "fFlh")) != -1) {
     switch(opt) {
       case 'f':
         OPTIONS |= FAILSSUM; 
+        break;
+      case 'F':
+        OPTIONS |= FAILFULL;
+        break;
+      case 'l':
+        OPTIONS |= PRINTLOG;
         break;
       case 'h':
         usage();
@@ -61,16 +69,27 @@ int main(int argc, char** argv) {
 
   std::vector<LogLine> logs;
   std::string line;
+
+  while (getline(log_file, line)) {
+    LogLine log = LogLine(line);
+    logs.push_back(log);
+  }
   
-  if (OPTIONS & FAILSSUM) {
-    while (getline(log_file, line)) {
-      LogLine log = LogLine(line);
-      logs.push_back(log);
-    }
+  if ((OPTIONS & FAILSSUM) && !(OPTIONS & FAILFULL)) {
 
     print_failed_logins(logs);
   }
 
+  if (OPTIONS & FAILFULL) {
+    // do something
+    std::cout << "Feature not implemented yet, stay tuned\n";
+  }
+
+  if (OPTIONS & PRINTLOG) {
+    for (auto& log : logs) {
+      log.display();
+    }
+  }
 
 
   log_file.close();
@@ -120,5 +139,7 @@ void print_failed_logins(const std::vector<LogLine> logs) {
 void usage() {
   std::cout << "Usage:          sudo ./log_parser [OPTIONS]\n"
             << "Options:\n"
-            << "    -f          Print login failure summary\n";
+            << "    -f          Print login failure summary\n"
+            << "    -F          Print full login failures\n"
+            << "    -l          Print entire log file\n";
 }
