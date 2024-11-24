@@ -17,6 +17,7 @@ private:
   std::string m_ip;
 
   bool m_is_failed_login = false;
+  bool m_is_successful_login = false;
 
 public:
 
@@ -31,6 +32,7 @@ public:
   std::string get_event_desc()      const;
   int         get_pid()             const;
   bool        is_failed_login()     const;
+  bool        is_successful_login() const;
   std::string get_ip()              const;
 
   void display();

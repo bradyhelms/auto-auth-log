@@ -35,8 +35,10 @@ LogLine::LogLine(const std::string& line) {
   // IP will be empty string if log doesn't contain an IP address
   m_ip = extract_ip();
   if (!m_ip.empty()) {
-    if (m_event_desc.substr(0, 15) == "Failed password") {
+    if (m_event_desc.substr(0, 15) ==   "Failed password") {
       m_is_failed_login = true;
+    } else if (m_event_desc.substr(0, 17) == "Accepted password") {
+      m_is_successful_login = true;
     }
   }
 
@@ -50,6 +52,7 @@ std::string LogLine::get_service()     const { return m_service;         }
 std::string LogLine::get_event_desc()  const { return m_event_desc;      }
 int         LogLine::get_pid()         const { return m_pid;             }
 bool        LogLine::is_failed_login() const { return m_is_failed_login; }
+bool        LogLine::is_successful_login() const {return m_is_successful_login; }
 std::string LogLine::get_ip()          const { return m_ip;              }
 std::string LogLine::get_formatted_time() const { 
   std::ostringstream oss;
